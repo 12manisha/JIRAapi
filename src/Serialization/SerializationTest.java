@@ -1,7 +1,10 @@
 package Serialization;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.builder.ResponseSpecBuilder;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
+import io.restassured.specification.ResponseSpecification;
 
 import static io.restassured.RestAssured.*;
 
@@ -11,7 +14,11 @@ import java.util.List;
 public class SerializationTest {
 	public static void main(String args[])
 	{
-		RestAssured.baseURI = "https://rahulshettyacademy.com";
+//		RestAssured.baseURI = "https://rahulshettyacademy.com";
+		RequestSpecification response = new RequestSpecBuilder().setBaseUri("https://rahulshettyacademy.com").addQueryParam("key", "qaclick")
+				.setContentType(ContentType.JSON).build();
+		
+
 		
 		AddPlace a = new AddPlace();
 		a.setAccuracy(50);
@@ -31,10 +38,11 @@ public class SerializationTest {
 		myList.add("Cricket");
 		a.setTypes(myList);
 		
-		String res =  given().log().all().queryParam("key", "qaclick123").body(a)
-		.when().post("/maps/api/place/add/json")
-		.then().assertThat().statusCode(200).extract().response().asString();
+		ResponseSpecification resspec =  new ResponseSpecBuilder().expectStatusCode(200).expectContentType(ContentType.JSON).build();
+		RequestSpecification res = given().spec(response).body(a);
 		
-		System.out.println(res);
+		String responseString =  res.when().post("/maps/api/place/add/json").then().spec(resspec).extract().response().asString();
+		
+		System.out.println(responseString);
 	}
 }
